@@ -1,6 +1,5 @@
-package com.pinkcells.workstation.ui.theme
+package com.pinkcells.workstation.shared.ui.theme
 
-import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme

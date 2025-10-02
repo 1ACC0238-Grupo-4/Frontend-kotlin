@@ -1,4 +1,4 @@
-package com.pinkcells.workstation.ui.theme
+package com.pinkcells.workstation.shared.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
