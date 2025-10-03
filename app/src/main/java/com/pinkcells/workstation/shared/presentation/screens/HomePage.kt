@@ -18,47 +18,34 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.pinkcells.workstation.shared.presentation.components.BottomNavigationBar
 
 @Composable
-fun HomePage() {
-    var selectedTab by remember { mutableStateOf(0) }
+fun HomePage(modifier: Modifier = Modifier) {
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
+        HeaderSection()
 
-    Scaffold(
-        bottomBar = {
-            BottomNavigationBar(
-                selectedTab = selectedTab,
-                onTabSelected = { selectedTab = it }
-            )
-        }
-    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .background(Color.White)
+                .padding(horizontal = 20.dp)
         ) {
-            HeaderSection()
+            Spacer(modifier = Modifier.height(24.dp))
 
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 20.dp)
-            ) {
-                Spacer(modifier = Modifier.height(24.dp))
+            SectionCard(
+title = "Reservations",
+                backgroundColor = Color(0xFFE8F36C)
+            )
 
-                SectionCard(
-                    title = "Reservas",
-                    backgroundColor = Color(0xFFE8F36C)
-                )
+            Spacer(modifier = Modifier.height(20.dp))
 
-                Spacer(modifier = Modifier.height(20.dp))
-
-                SectionCard(
-                    title = "Chats",
-                    backgroundColor = Color(0xFFE8F36C)
-                )
-            }
+            SectionCard(
+                title = "Chats",
+                backgroundColor = Color(0xFFE8F36C)
+            )
         }
     }
 }
@@ -105,7 +92,7 @@ private fun HeaderSection() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Bienvenido usuario1",
+                text = "Welcome user1",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
@@ -120,7 +107,7 @@ private fun HeaderSection() {
             ) {
                 Icon(
                     imageVector = Icons.Default.Person,
-                    contentDescription = "Usuario",
+contentDescription = "User",
                     modifier = Modifier.size(40.dp),
                     tint = Color.Black
                 )
@@ -162,4 +149,3 @@ fun HomePagePreview(){
         HomePage()
     }
 }
-

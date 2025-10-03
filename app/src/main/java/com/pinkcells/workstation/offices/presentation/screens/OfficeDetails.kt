@@ -12,46 +12,48 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-import com.pinkcells.workstation.shared.presentation.components.BottomNavigationBar
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.pinkcells.workstation.offices.presentation.viewmodel.OfficeDetailViewModel
 import com.pinkcells.workstation.shared.ui.theme.WorkstationTheme
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 
 @Composable
 fun OfficeDetailPage(
-    officeId: Int? = null, // null significa que es nueva oficina
+    officeId: Int? = null,
     onSave: (String, String, String, String, String) -> Unit = { _, _, _, _, _ -> },
-    onCancel: () -> Unit = {}
+    onCancel: () -> Unit = {},
+    onBack: () -> Unit = {}
 ) {
-    var selectedTab by remember { mutableStateOf(1) }
+    val vm: OfficeDetailViewModel = viewModel()
+    val officeState by vm.office.collectAsState()
 
-    // Estados para los campos de texto
     var nombreOficina by remember { mutableStateOf("") }
     var ubicacion by remember { mutableStateOf("") }
     var capacidad by remember { mutableStateOf("") }
     var descripcion by remember { mutableStateOf("") }
     var imageUrl by remember { mutableStateOf("") }
 
-    // Si es edición, cargarías los datos aquí
-    LaunchedEffect(officeId) {
-        if (officeId != null) {
-            // Aquí cargarías los datos de la oficina desde tu API/ViewModel
-            nombreOficina = "Oficina $officeId"
-            // ubicacion = ...
-            // etc.
+    LaunchedEffect(officeState) {
+        val o = officeState
+        if (o != null) {
+            nombreOficina = "Oficina ${o.id}"
+            ubicacion = o.ubicacion
+            capacidad = o.capacidad.toString()
+            descripcion = o.descripcion
+            imageUrl = o.imageUrl
         }
     }
 
     Scaffold(
-        bottomBar = {
-            BottomNavigationBar(
-                selectedTab = selectedTab,
-                onTabSelected = { selectedTab = it }
-            )
-        }
     ) { paddingValues ->
         Column(
             modifier = Modifier
@@ -59,10 +61,8 @@ fun OfficeDetailPage(
                 .padding(paddingValues)
                 .background(Color.White)
         ) {
-            // Header con curva verde
             HeaderSection()
 
-            // Contenido principal con scroll
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -71,16 +71,30 @@ fun OfficeDetailPage(
             ) {
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Título
-                Text(
-                    text = if (officeId == null) "Oficina 1" else "Editar Oficina",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedButton(
+                        onClick = onBack,
+                        colors = ButtonDefaults.outlinedButtonColors(
+                            containerColor = Color(0xFFE8F36C),
+                            contentColor = Color.Black
+                        )
+                    ) {
+                        Text(text = "Volver")
+                    }
 
-                // Imagen de la oficina
+                    Text(
+                        text = nombreOficina.ifEmpty { if (officeId == null) "Nueva Oficina" else "Oficina" },
+                        fontSize = 24.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.Black
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+
                 AsyncImage(
                     model = imageUrl.ifEmpty { "https://images.unsplash.com/photo-1497366216548-37526070297c" },
                     contentDescription = "Imagen de oficina",
@@ -92,9 +106,27 @@ fun OfficeDetailPage(
                     contentScale = ContentScale.Crop
                 )
 
+                Spacer(modifier = Modifier.height(8.dp))
+
+                val pickImageLauncher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.PickVisualMedia()
+                ) { uri ->
+                    if (uri != null) imageUrl = uri.toString()
+                }
+
+                Button(
+                    onClick = {
+                        pickImageLauncher.launch(
+                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                        )
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9FD857))
+                ) {
+                    Text("Seleccionar imagen de galería", color = Color.Black)
+                }
+
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // Campo: Nombre de oficina
                 OfficeTextField(
                     value = nombreOficina,
                     onValueChange = { nombreOficina = it },
@@ -103,7 +135,6 @@ fun OfficeDetailPage(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Campo: Ubicación
                 OfficeTextField(
                     value = ubicacion,
                     onValueChange = { ubicacion = it },
@@ -112,7 +143,6 @@ fun OfficeDetailPage(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Campo: Capacidad
                 OfficeTextField(
                     value = capacidad,
                     onValueChange = { capacidad = it },
@@ -121,7 +151,6 @@ fun OfficeDetailPage(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Campo: Descripción
                 OfficeTextField(
                     value = descripcion,
                     onValueChange = { descripcion = it },
@@ -130,7 +159,6 @@ fun OfficeDetailPage(
 
                 Spacer(modifier = Modifier.height(12.dp))
 
-                // Campo: URL de imagen
                 OfficeTextField(
                     value = imageUrl,
                     onValueChange = { imageUrl = it },
@@ -139,33 +167,36 @@ fun OfficeDetailPage(
 
                 Spacer(modifier = Modifier.height(32.dp))
 
-                // Botones de acción
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    // Botón Guardar cambios
+                    val canSave = ubicacion.isNotBlank() &&
+                            capacidad.toIntOrNull() != null &&
+                            descripcion.isNotBlank() &&
+                            imageUrl.isNotBlank()
+
                     Button(
                         onClick = {
                             onSave(nombreOficina, ubicacion, capacidad, descripcion, imageUrl)
                         },
+                        enabled = canSave,
                         modifier = Modifier
                             .weight(1f)
                             .height(56.dp),
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = Color(0xFFE8F36C)
+                            containerColor = if (canSave) Color(0xFFE8F36C) else Color(0xFFBDBDBD)
                         ),
                         shape = RoundedCornerShape(28.dp)
                     ) {
                         Text(
-                            text = "Guardar cambios",
+                            text = "Guardar",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.SemiBold,
                             color = Color.Black
                         )
                     }
 
-                    // Botón Cancelar
                     Button(
                         onClick = onCancel,
                         modifier = Modifier

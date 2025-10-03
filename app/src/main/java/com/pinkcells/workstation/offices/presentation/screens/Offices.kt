@@ -15,161 +15,96 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pinkcells.workstation.offices.presentation.components.OfficeCard
-import com.pinkcells.workstation.offices.presentation.components.Office
-import com.pinkcells.workstation.shared.presentation.components.BottomNavigationBar
+import com.pinkcells.workstation.offices.presentation.viewmodel.OfficesViewModel
 import com.pinkcells.workstation.shared.ui.theme.WorkstationTheme
 
 
 @Composable
-fun OficinasPage() {
-    var selectedTab by remember { mutableIntStateOf(1) }
+fun OfficesPage(
+    modifier: Modifier = Modifier,
+    onOfficeClick: (Int) -> Unit = {},
+    onAddOffice: () -> Unit = {}
+) {
+    val vm: OfficesViewModel = viewModel()
+    val oficinas by vm.offices.collectAsState()
+    val isLoading by vm.isLoading.collectAsState()
 
-    // Estado para las oficinas (en producción usarías ViewModel + StateFlow)
-    var oficinas by remember {
-        mutableStateOf(
-            listOf(
-                Office(
-                    id = 1,
-                    imageUrl = "https://images.unsplash.com/photo-1497366216548-37526070297c",
-                    ubicacion = "Piso 1 - Sala A",
-                    capacidad = 8,
-                    descripcion = "Oficina ejecutiva con vista panorámica y equipamiento completo"
-                ),
-                Office(
-                    id = 2,
-                    imageUrl = "https://images.unsplash.com/photo-1497366811353-6870744d04b2",
-                    ubicacion = "Piso 2 - Sala B",
-                    capacidad = 12,
-                    descripcion = "Sala de conferencias con proyector y sistema de videoconferencia"
-                ),
-                Office(
-                    id = 3,
-                    imageUrl = "https://images.unsplash.com/photo-1497366754035-f200968a6e72",
-                    ubicacion = "Piso 3 - Sala C",
-                    capacidad = 20,
-                    descripcion = "Auditorio espacioso ideal para presentaciones y eventos corporativos"
-                ),
-                Office(
-                    id = 4,
-                    imageUrl = "https://images.unsplash.com/photo-1542744173-8e7e53415bb0",
-                    ubicacion = "Piso 1 - Sala D",
-                    capacidad = 6,
-                    descripcion = "Sala de reuniones privada con pizarra inteligente y conexión WiFi"
-                )
-            )
-        )
-    }
+    Column(
+        modifier = modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
+        HeaderSection()
 
-    // Estado de carga (para cuando llames a tu API)
-    var isLoading by remember { mutableStateOf(false) }
-
-    // Aquí llamarías a tu API
-    LaunchedEffect(Unit) {
-        // Ejemplo de cómo cargar desde API:
-        // isLoading = true
-        // try {
-        //     oficinas = apiService.getOficinas()
-        // } catch (e: Exception) {
-        //     // Manejar error
-        // } finally {
-        //     isLoading = false
-        // }
-    }
-
-    Scaffold(
-        bottomBar = {
-            BottomNavigationBar(
-                selectedTab = selectedTab,
-                onTabSelected = { selectedTab = it }
-            )
-        }
-    ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
-                .background(Color.White)
+                .padding(horizontal = 20.dp)
         ) {
-            // Header con curva verde
-            HeaderSection()
+            Spacer(modifier = Modifier.height(24.dp))
 
-            // Contenido principal
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 20.dp)
-            ) {
-                Spacer(modifier = Modifier.height(24.dp))
+            Text(
+                text = "Offices",
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                color = Color.Black,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
 
-                // Título
-                Text(
-                    text = "Oficinas",
-                    fontSize = 24.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
-
-                // Mostrar loading o lista
-                if (isLoading) {
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxWidth(),
-                        contentAlignment = androidx.compose.ui.Alignment.Center
-                    ) {
-                        CircularProgressIndicator(color = Color(0xFF5BB318))
-                    }
-                } else {
-                    // Lista de oficinas
-                    LazyColumn(
-                        modifier = Modifier.weight(1f)
-                    ) {
-                        items(oficinas) { office ->
-                            OfficeCard(
-                                office = office,
-                                onClick = {
-                                    println("Click en oficina: ${office.ubicacion}")
-                                }
-                            )
-                        }
-                    }
-                }
-
-                // Botón de agregar
-                Button(
-                    onClick = { /* Acción para agregar oficina */ },
+            if (isLoading) {
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp)
-                        .padding(vertical = 8.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(0xFF9FD857)
-                    ),
-                    shape = RoundedCornerShape(28.dp)
+                        .weight(1f)
+                        .fillMaxWidth(),
+                    contentAlignment = androidx.compose.ui.Alignment.Center
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = "Agregar",
-                        tint = Color.Black,
-                        modifier = Modifier.size(24.dp)
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "Agregar Oficina",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = Color.Black
-                    )
+                    CircularProgressIndicator(color = Color(0xFF5BB318))
                 }
-
-                Spacer(modifier = Modifier.height(8.dp))
+            } else {
+                LazyColumn(
+                    modifier = Modifier.weight(1f)
+                ) {
+                    items(oficinas) { office ->
+                        OfficeCard(
+                            office = office,
+                            onClick = { onOfficeClick(office.id) }
+                        )
+                    }
+                }
             }
+
+Button(
+                onClick = onAddOffice,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp)
+                    .padding(vertical = 8.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = Color(0xFF9FD857)
+                ),
+                shape = RoundedCornerShape(28.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Add,
+contentDescription = "Add",
+                    tint = Color.Black,
+                    modifier = Modifier.size(24.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+text = "Add Office",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = Color.Black
+                )
+            }
+
+            Spacer(modifier = Modifier.height(8.dp))
         }
     }
 }
-
 @Composable
 private fun HeaderSection() {
     Box(
@@ -208,6 +143,6 @@ private fun HeaderSection() {
 @Composable
 fun OfficePagePreview(){
     WorkstationTheme {
-        OficinasPage()
+        OfficesPage(onOfficeClick = {}, onAddOffice = {})
     }
 }

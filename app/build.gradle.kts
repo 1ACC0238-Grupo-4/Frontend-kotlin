@@ -42,7 +42,8 @@ android {
 dependencies {
 
     implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
+implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
@@ -51,6 +52,7 @@ dependencies {
     implementation(libs.androidx.material3)
     implementation(libs.coil.kt.coil.compose)
     implementation(libs.retrofit)
+    implementation(libs.androidx.navigation.compose)
 
     implementation(libs.converter.scalars)
     testImplementation(libs.junit)

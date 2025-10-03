@@ -22,7 +22,7 @@ import coil.compose.AsyncImage
 
 data class Office(
     val id: Int,
-    val imageUrl: String, // URL de la imagen desde la API
+val imageUrl: String,
     val ubicacion: String,
     val capacidad: Int,
     val descripcion: String
@@ -50,10 +50,9 @@ fun OfficeCard(
                 .fillMaxSize()
                 .padding(8.dp)
         ) {
-            // Imagen de la oficina desde URL
             AsyncImage(
                 model = office.imageUrl,
-                contentDescription = "Oficina ${office.id}",
+                contentDescription = "Office ${office.id}",
                 modifier = Modifier
                     .width(100.dp)
                     .fillMaxHeight()
@@ -64,21 +63,19 @@ fun OfficeCard(
 
             Spacer(modifier = Modifier.width(12.dp))
 
-            // Información de la oficina
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .weight(1f),
                 verticalArrangement = Arrangement.SpaceBetween
             ) {
-                // Ubicación
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(top = 4.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.LocationOn,
-                        contentDescription = "Ubicación",
+contentDescription = "Location",
                         modifier = Modifier.size(16.dp),
                         tint = Color(0xFF5BB318)
                     )
@@ -91,7 +88,6 @@ fun OfficeCard(
                     )
                 }
 
-                // Descripción
                 Text(
                     text = office.descripcion,
                     fontSize = 12.sp,
@@ -100,20 +96,19 @@ fun OfficeCard(
                     modifier = Modifier.padding(vertical = 4.dp)
                 )
 
-                // Capacidad
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(bottom = 4.dp)
                 ) {
                     Icon(
                         imageVector = Icons.Default.Person,
-                        contentDescription = "Capacidad",
+contentDescription = "Capacity",
                         modifier = Modifier.size(16.dp),
                         tint = Color(0xFF5BB318)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "Capacidad: ${office.capacidad} personas",
+text = "Capacity: ${office.capacidad} people",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color.Black
