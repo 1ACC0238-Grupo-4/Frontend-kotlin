@@ -24,12 +24,16 @@ import com.pinkcells.workstation.shared.ui.theme.WorkstationTheme
 @Composable
 fun OfficesPage(
     modifier: Modifier = Modifier,
-    onOfficeClick: (Int) -> Unit = {},
+    onOfficeClick: (String) -> Unit = {},
     onAddOffice: () -> Unit = {}
 ) {
     val vm: OfficesViewModel = viewModel()
     val oficinas by vm.offices.collectAsState()
     val isLoading by vm.isLoading.collectAsState()
+
+    LaunchedEffect(Unit) {
+        vm.fetchOffices()
+    }
 
     Column(
         modifier = modifier
@@ -37,14 +41,12 @@ fun OfficesPage(
             .background(Color.White)
     ) {
         HeaderSection()
-
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(horizontal = 20.dp)
         ) {
             Spacer(modifier = Modifier.height(24.dp))
-
             Text(
                 text = "Offices",
                 fontSize = 24.sp,
@@ -52,7 +54,6 @@ fun OfficesPage(
                 color = Color.Black,
                 modifier = Modifier.padding(bottom = 16.dp)
             )
-
             if (isLoading) {
                 Box(
                     modifier = Modifier
@@ -69,13 +70,12 @@ fun OfficesPage(
                     items(oficinas) { office ->
                         OfficeCard(
                             office = office,
-                            onClick = { onOfficeClick(office.id) }
+                            onClick = { office.id?.let { onOfficeClick(it) } }
                         )
                     }
                 }
             }
-
-Button(
+            Button(
                 onClick = onAddOffice,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -88,19 +88,18 @@ Button(
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-contentDescription = "Add",
+                    contentDescription = "Add",
                     tint = Color.Black,
                     modifier = Modifier.size(24.dp)
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
-text = "Add Office",
+                    text = "Add Office",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                     color = Color.Black
                 )
             }
-
             Spacer(modifier = Modifier.height(8.dp))
         }
     }

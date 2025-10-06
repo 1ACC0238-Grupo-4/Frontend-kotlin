@@ -7,7 +7,6 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
-
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -25,36 +24,60 @@ import com.pinkcells.workstation.shared.ui.theme.WorkstationTheme
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.saveable.listSaver
+import androidx.compose.runtime.saveable.rememberSaveable
+import com.pinkcells.workstation.offices.domain.Office
+import com.pinkcells.workstation.offices.domain.OfficeService
+import kotlinx.coroutines.coroutineScope
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SnackbarDuration
+import kotlinx.coroutines.launch
 
 @Composable
 fun OfficeDetailPage(
-    officeId: Int? = null,
-    onSave: (String, String, String, String, String) -> Unit = { _, _, _, _, _ -> },
+    officeId: String? = null,
+    onSave: () -> Unit = {},
     onCancel: () -> Unit = {},
     onBack: () -> Unit = {}
 ) {
     val vm: OfficeDetailViewModel = viewModel()
     val officeState by vm.office.collectAsState()
 
-    var nombreOficina by remember { mutableStateOf("") }
     var ubicacion by remember { mutableStateOf("") }
     var capacidad by remember { mutableStateOf("") }
+    var costoPorDia by remember { mutableStateOf("") }
     var descripcion by remember { mutableStateOf("") }
     var imageUrl by remember { mutableStateOf("") }
+    var disponible by remember { mutableStateOf(true) }
+
+    var nuevoServicioNombre by remember { mutableStateOf("") }
+    var nuevoServicioDescripcion by remember { mutableStateOf("") }
+    var nuevoServicioCosto by remember { mutableStateOf("") }
+
+    var servicios by remember { mutableStateOf(listOf<OfficeService>()) }
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    val coroutineScope = rememberCoroutineScope()
+
+
+    LaunchedEffect(officeId) {
+        officeId?.let { vm.fetchOfficeById(it) }
+    }
 
     LaunchedEffect(officeState) {
-        val o = officeState
-        if (o != null) {
-            nombreOficina = "Oficina ${o.id}"
-            ubicacion = o.ubicacion
-            capacidad = o.capacidad.toString()
-            descripcion = o.descripcion
-            imageUrl = o.imageUrl
+        officeState?.let { o ->
+            ubicacion = o.location
+            capacidad = o.capacity.toString()
+            costoPorDia = o.costPerDay.toString()
+            descripcion = o.description ?: ""
+            imageUrl = o.imageUrl ?: ""
+            disponible = o.available
+            servicios = o.services ?: emptyList()
         }
     }
 
-    Scaffold(
-    ) { paddingValues ->
+    Scaffold { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -62,7 +85,6 @@ fun OfficeDetailPage(
                 .background(Color.White)
         ) {
             HeaderSection()
-
             Column(
                 modifier = Modifier
                     .fillMaxSize()
@@ -87,7 +109,7 @@ fun OfficeDetailPage(
                     }
 
                     Text(
-                        text = nombreOficina.ifEmpty { if (officeId == null) "Nueva Oficina" else "Oficina" },
+                        text = if (officeId == null) "Nueva Oficina" else "Editar Oficina",
                         fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = Color.Black
@@ -128,14 +150,6 @@ fun OfficeDetailPage(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 OfficeTextField(
-                    value = nombreOficina,
-                    onValueChange = { nombreOficina = it },
-                    placeholder = "Nombre de la oficina"
-                )
-
-                Spacer(modifier = Modifier.height(12.dp))
-
-                OfficeTextField(
                     value = ubicacion,
                     onValueChange = { ubicacion = it },
                     placeholder = "Ubicación"
@@ -146,7 +160,15 @@ fun OfficeDetailPage(
                 OfficeTextField(
                     value = capacidad,
                     onValueChange = { capacidad = it },
-                    placeholder = "Capacidad"
+                    placeholder = "Capacidad (personas)"
+                )
+
+                Spacer(modifier = Modifier.height(12.dp))
+
+                OfficeTextField(
+                    value = costoPorDia,
+                    onValueChange = { costoPorDia = it },
+                    placeholder = "Costo por día (S/.)"
                 )
 
                 Spacer(modifier = Modifier.height(12.dp))
@@ -165,7 +187,107 @@ fun OfficeDetailPage(
                     placeholder = "URL de imagen"
                 )
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.height(16.dp))
+
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Text(
+                        text = "Disponible",
+                        fontSize = 16.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = Color.Black
+                    )
+                    Switch(
+                        checked = disponible,
+                        onCheckedChange = { disponible = it },
+                        colors = SwitchDefaults.colors(
+                            checkedThumbColor = Color(0xFF5BB318),
+                            checkedTrackColor = Color(0xFF9FD857),
+                            uncheckedThumbColor = Color.Gray,
+                            uncheckedTrackColor = Color.LightGray
+                        )
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Text(
+                    text = "Servicios incluidos",
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                officeState?.services?.forEach { service ->
+                    ServiceCard(
+                        name = service.name,
+                        description = service.description,
+                        cost = service.cost
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OfficeTextField(
+                    value = nuevoServicioNombre,
+                    onValueChange = { nuevoServicioNombre = it },
+                    placeholder = "Nombre del servicio"
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OfficeTextField(
+                    value = nuevoServicioDescripcion,
+                    onValueChange = { nuevoServicioDescripcion = it },
+                    placeholder = "Descripción del servicio"
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                OfficeTextField(
+                    value = nuevoServicioCosto,
+                    onValueChange = { nuevoServicioCosto = it },
+                    placeholder = "Costo del servicio (S/.)"
+                )
+
+                Spacer(modifier = Modifier.height(8.dp))
+
+                Button(
+                    onClick = {
+                        if (nuevoServicioNombre.isNotBlank() && nuevoServicioCosto.toDoubleOrNull() != null) {
+                            val nuevo = OfficeService(
+                                name = nuevoServicioNombre,
+                                description = nuevoServicioDescripcion,
+                                cost = nuevoServicioCosto.toDouble().toInt()
+                            )
+                            servicios = servicios + nuevo
+
+                            // Limpia los campos
+                            nuevoServicioNombre = ""
+                            nuevoServicioDescripcion = ""
+                            nuevoServicioCosto = ""
+
+                            // Mostrar snackbar
+                            coroutineScope.launch {
+                                snackbarHostState.showSnackbar(
+                                    message = "Servicio agregado correctamente",
+                                    duration = SnackbarDuration.Short
+                                )
+                            }
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF9FD857))
+                ) {
+                    Text("Agregar servicio", color = Color.Black)
+                }
+
 
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -173,12 +295,24 @@ fun OfficeDetailPage(
                 ) {
                     val canSave = ubicacion.isNotBlank() &&
                             capacidad.toIntOrNull() != null &&
+                            costoPorDia.toIntOrNull() != null &&
                             descripcion.isNotBlank() &&
                             imageUrl.isNotBlank()
 
                     Button(
                         onClick = {
-                            onSave(nombreOficina, ubicacion, capacidad, descripcion, imageUrl)
+                            val office = Office(
+                                id = officeId,
+                                location = ubicacion,
+                                description = descripcion,
+                                imageUrl = imageUrl,
+                                capacity = capacidad.toIntOrNull() ?: 0,
+                                costPerDay = costoPorDia.toIntOrNull() ?: 0,
+                                available = disponible,
+                                services = servicios,
+                                ratings = emptyList()
+                            )
+                            vm.saveOffice(office) { onSave() }
                         },
                         enabled = canSave,
                         modifier = Modifier
@@ -288,10 +422,53 @@ private fun HeaderSection() {
     }
 }
 
+@Composable
+fun ServiceCard(
+    name: String,
+    description: String,
+    cost: Int
+) {
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp)),
+        colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F36C)),
+        elevation = CardDefaults.cardElevation(4.dp)
+    ) {
+        Column(
+            modifier = Modifier
+                .padding(16.dp)
+        ) {
+            Text(
+                text = name,
+                fontSize = 16.sp,
+                fontWeight = FontWeight.SemiBold,
+                color = Color.Black
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = description,
+                fontSize = 14.sp,
+                color = Color.DarkGray
+            )
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+                text = "Costo: S/. $cost",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Medium,
+                color = Color.Black
+            )
+        }
+    }
+}
+
+
+
+
 @Preview(showBackground = true)
 @Composable
 fun OfficeDetailPreview(){
     WorkstationTheme {
-        OfficeDetailPage{}
+        OfficeDetailPage()
     }
 }

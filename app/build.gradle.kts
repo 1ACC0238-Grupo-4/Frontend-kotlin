@@ -42,7 +42,7 @@ android {
 dependencies {
 
     implementation(libs.androidx.core.ktx)
-implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.androidx.activity.compose)
     implementation(platform(libs.androidx.compose.bom))
@@ -53,8 +53,10 @@ implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.coil.kt.coil.compose)
     implementation(libs.retrofit)
     implementation(libs.androidx.navigation.compose)
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
     implementation(libs.converter.scalars)
+    implementation(libs.converter.gson)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -62,6 +64,4 @@ implementation(libs.androidx.lifecycle.runtime.ktx)
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
-
 }

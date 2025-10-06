@@ -1,6 +1,5 @@
 package com.pinkcells.workstation.offices.presentation.components
 
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -18,15 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
-
-
-data class Office(
-    val id: Int,
-val imageUrl: String,
-    val ubicacion: String,
-    val capacidad: Int,
-    val descripcion: String
-)
+import com.pinkcells.workstation.offices.domain.Office
 
 @Composable
 fun OfficeCard(
@@ -51,7 +42,7 @@ fun OfficeCard(
                 .padding(8.dp)
         ) {
             AsyncImage(
-                model = office.imageUrl,
+                model = office.imageUrl ?: "https://images.unsplash.com/photo-1497366216548-37526070297c",
                 contentDescription = "Office ${office.id}",
                 modifier = Modifier
                     .width(100.dp)
@@ -75,13 +66,13 @@ fun OfficeCard(
                 ) {
                     Icon(
                         imageVector = Icons.Default.LocationOn,
-contentDescription = "Location",
+                        contentDescription = "Location",
                         modifier = Modifier.size(16.dp),
                         tint = Color(0xFF5BB318)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = office.ubicacion,
+                        text = office.location,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.SemiBold,
                         color = Color.Black
@@ -89,7 +80,7 @@ contentDescription = "Location",
                 }
 
                 Text(
-                    text = office.descripcion,
+                    text = office.description ?: "No description",
                     fontSize = 12.sp,
                     color = Color.DarkGray,
                     maxLines = 2,
@@ -102,13 +93,13 @@ contentDescription = "Location",
                 ) {
                     Icon(
                         imageVector = Icons.Default.Person,
-contentDescription = "Capacity",
+                        contentDescription = "Capacity",
                         modifier = Modifier.size(16.dp),
                         tint = Color(0xFF5BB318)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-text = "Capacity: ${office.capacidad} people",
+                        text = "Capacity: ${office.capacity} people",
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium,
                         color = Color.Black
@@ -118,4 +109,3 @@ text = "Capacity: ${office.capacidad} people",
         }
     }
 }
-
