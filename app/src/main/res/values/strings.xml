@@ -1,3 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Workstation</string>
+
+    <!-- Login Screen -->
+    <string name="bienvenido_usuario">Bienvenido usuario</string>
+    <string name="correo">Correo</string>
+    <string name="contrasena">Contraseña</string>
+    <string name="iniciar_sesion">Iniciar Sesión</string>
+    <string name="olvidaste_contrasena">¿Olvidaste tu contraseña?</string>
+    <string name="no_tienes_cuenta">¿No tienes cuenta?</string>
+    <string name="registrarse">Registrarse</string>
+
+    <!-- Registro Screen -->
+    <string name="registro_paso_1">Registro - Paso 1</string>
+    <string name="nombre">Nombre</string>
+    <string name="apellido">Apellido</string>
+    <string name="siguiente">Siguiente</string>
+    <string name="atras">Atrás</string>
+
+    <string name="registro_paso_2">Registro - Paso 2</string>
+    <string name="confirmar_contrasena">Confirmar Contraseña</string>
+    <string name="telefono">Teléfono</string>
+
+    <!-- Recuperar Contraseña -->
+    <string name="recuperar_contrasena">Recuperar Contraseña</string>
+    <string name="ingresa_correo">Ingresa tu correo para recibir instrucciones</string>
+    <string name="enviar_link">Enviar Link</string>
+    <string name="correo_enviado">Correo enviado</string>
+    <string name="revisa_bandeja">Revisa tu bandeja de entrada para las instrucciones</string>
+    <string name="volver_login">Volver a Login</string>
+
+    <!-- Perfil -->
+    <string name="usuario1">Usuario1</string>
+    <string name="nombre_usuario">Nombre de usuario</string>
+    <string name="miembro_desde">Miembro desde</string>
+    <string name="editar_perfil">Editar Perfil</string>
+    <string name="cambiar_contrasena">Cambiar Contraseña</string>
+    <string name="cerrar_sesion">Cerrar Sesión</string>
+
+    <!-- Home -->
+    <string name="bienvenido_workstation">Bienvenido a Workstation</string>
+    <string name="ver_mi_perfil">Ver Mi Perfil</string>
+    <string name="loading">Loading...</string>
 </resources>
