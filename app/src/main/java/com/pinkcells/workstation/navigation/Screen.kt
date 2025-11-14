@@ -7,8 +7,4 @@ sealed class Screen(val route: String) {
     object Registro2 : Screen("registro2")
     object RecuperarContraseña : Screen("recuperar_contraseña")
     object HomePage : Screen("home_page")
-    object Reservas : Screen("reservas")
-    object Busqueda : Screen("busqueda")
-    object Chats : Screen("chats")
-    object Perfil : Screen("perfil")
 }

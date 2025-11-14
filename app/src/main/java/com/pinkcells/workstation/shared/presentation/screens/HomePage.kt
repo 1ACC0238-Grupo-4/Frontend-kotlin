@@ -14,13 +14,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.pinkcells.workstation.authentication.presentation.viewmodel.AuthViewModel
 
 @Composable
 fun HomePage(modifier: Modifier = Modifier) {
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -52,6 +55,18 @@ title = "Reservations",
 
 @Composable
 private fun HeaderSection() {
+    val context = LocalContext.current
+    val viewModel = remember { AuthViewModel(context) }
+
+    var nombreUsuario by remember { mutableStateOf("") }
+    var tipoUsuario by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        viewModel.obtenerDatosUsuario { usuario ->
+            nombreUsuario = usuario.nombre
+            tipoUsuario = usuario.tipoUsuario
+        }
+    }
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -92,7 +107,7 @@ private fun HeaderSection() {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "Welcome user1",
+                text = "Welcome $nombreUsuario",
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black

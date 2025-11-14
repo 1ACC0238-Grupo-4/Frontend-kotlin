@@ -14,16 +14,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
-import androidx.navigation.NavType
-import com.pinkcells.workstation.offices.presentation.screens.OfficesPage
-import com.pinkcells.workstation.shared.presentation.screens.HomePage
-import com.pinkcells.workstation.offices.presentation.screens.OfficeDetailPage
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.compose.rememberNavController
 import com.pinkcells.workstation.shared.ui.theme.WorkstationTheme
 
 
@@ -34,7 +27,7 @@ BottomNavItem(icon = Icons.Default.Home, label = "Home", route = RoutesBN.HOME),
         BottomNavItem(icon = Icons.Default.DateRange, label = "Reservations", route = RoutesBN.OFFICES),
         BottomNavItem(icon = Icons.Default.Search, label = "Search", route = "search"),
         BottomNavItem(icon = Icons.Default.Email, label = "Chats", route = "chats"),
-        BottomNavItem(icon = Icons.Default.Person, label = "Profile", route = "profile")
+        BottomNavItem(icon = Icons.Default.Person, label = "Profile", route = RoutesBN.PROFILE)
     )
 
     val backStackEntry by navController.currentBackStackEntryAsState()
@@ -48,6 +41,7 @@ items.forEach { item ->
             val selected = when (item.route) {
                 RoutesBN.HOME -> currentRoute == RoutesBN.HOME || currentRoute == null
                 RoutesBN.OFFICES -> currentRoute == RoutesBN.OFFICES || (currentRoute?.startsWith("office/") == true) || currentRoute == RoutesBN.OFFICE_CREATE
+                RoutesBN.PROFILE -> currentRoute == RoutesBN.PROFILE || currentRoute == null
                 else -> currentRoute == item.route
             }
 
@@ -73,7 +67,7 @@ items.forEach { item ->
                 },
                 selected = selected,
                 onClick = {
-                    if (item.route in listOf(RoutesBN.HOME, RoutesBN.OFFICES)) {
+                    if (item.route in listOf(RoutesBN.HOME, RoutesBN.OFFICES, RoutesBN.PROFILE)) {
                         navController.navigate(item.route) {
                             launchSingleTop = true
                             restoreState = true

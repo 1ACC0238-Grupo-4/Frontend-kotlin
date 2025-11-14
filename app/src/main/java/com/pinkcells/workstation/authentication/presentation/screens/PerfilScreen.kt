@@ -21,6 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.pinkcells.workstation.authentication.presentation.viewmodel.AuthViewModel
+import com.pinkcells.workstation.navigation.Screen
 
 @Composable
 fun PerfilScreen(navController: NavHostController) {
@@ -293,8 +294,9 @@ fun PerfilScreen(navController: NavHostController) {
                 Button(
                     onClick = {
                         viewModel.cerrarSesion()
-                        navController.navigate("iniciar_sesion") {
+                        navController.navigate(Screen.IniciarSesion.route) {
                             popUpTo(0) { inclusive = true }
+                            launchSingleTop = true
                         }
                     },
                     modifier = Modifier
