@@ -1,4 +1,4 @@
-package com.pinkcells.workstation.viewmodel
+package com.pinkcells.workstation.authentication.presentation.viewmodel
 
 import android.content.Context
 import android.content.SharedPreferences

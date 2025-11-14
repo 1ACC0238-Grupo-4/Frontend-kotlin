@@ -4,7 +4,16 @@ import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.pinkcells.workstation.ui.screens.*
+import com.pinkcells.workstation.authentication.presentation.screens.BusquedaScreen
+import com.pinkcells.workstation.authentication.presentation.screens.ChatsScreen
+import com.pinkcells.workstation.authentication.presentation.screens.HomePageScreen
+import com.pinkcells.workstation.authentication.presentation.screens.LoadingScreen
+import com.pinkcells.workstation.authentication.presentation.screens.LogInScreen
+import com.pinkcells.workstation.authentication.presentation.screens.PerfilScreen
+import com.pinkcells.workstation.authentication.presentation.screens.RecoverPasswordScreen
+import com.pinkcells.workstation.authentication.presentation.screens.Register1Screen
+import com.pinkcells.workstation.authentication.presentation.screens.Register2Screen
+import com.pinkcells.workstation.authentication.presentation.screens.ReservasScreen
 
 @Composable
 fun NavGraph(navController: NavHostController) {

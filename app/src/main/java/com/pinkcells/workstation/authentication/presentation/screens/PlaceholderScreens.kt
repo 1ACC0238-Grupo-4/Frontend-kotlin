@@ -1,4 +1,4 @@
-package com.pinkcells.workstation.ui.screens
+package com.pinkcells.workstation.authentication.presentation.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -11,7 +11,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.pinkcells.workstation.navigation.Screen
 
 @Composable
 fun ReservasScreen(navController: NavHostController) {

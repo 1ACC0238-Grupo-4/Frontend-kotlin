@@ -1,4 +1,4 @@
-package com.pinkcells.workstation.ui.screens
+package com.pinkcells.workstation.authentication.presentation.screens
 
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.Image
@@ -19,7 +19,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.pinkcells.workstation.R
 import com.pinkcells.workstation.navigation.Screen
-import com.pinkcells.workstation.viewmodel.AuthViewModel
+import com.pinkcells.workstation.authentication.presentation.viewmodel.AuthViewModel
 import kotlinx.coroutines.delay
 
 @Composable
