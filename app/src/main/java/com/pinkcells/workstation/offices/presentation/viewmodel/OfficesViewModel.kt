@@ -11,6 +11,8 @@ import android.util.Log
 import kotlinx.coroutines.flow.asStateFlow
 
 class OfficesViewModel : ViewModel() {
+
+
     private val _offices = MutableStateFlow<List<Office>>(emptyList())
     val offices: StateFlow<List<Office>> = _offices.asStateFlow()
 
@@ -30,6 +32,7 @@ class OfficesViewModel : ViewModel() {
             _error.value = null
 
             Log.d("OfficesViewModel", "Starting to fetch offices...")
+
 
             try {
                 val response = OfficesRepository.fetchOffices()
@@ -59,4 +62,5 @@ class OfficesViewModel : ViewModel() {
             onResult(result)
         }
     }
+
 }

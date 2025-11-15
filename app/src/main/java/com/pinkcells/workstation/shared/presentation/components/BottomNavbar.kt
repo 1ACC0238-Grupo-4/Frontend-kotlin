@@ -25,6 +25,7 @@ import com.pinkcells.workstation.shared.presentation.screens.HomePage
 import com.pinkcells.workstation.offices.presentation.screens.OfficeDetailPage
 import androidx.compose.ui.tooling.preview.Preview
 import com.pinkcells.workstation.shared.ui.theme.WorkstationTheme
+//import com.pinkcells.workstation.shared.presentation.components.RoutesBN
 
 
 @Composable
@@ -32,7 +33,8 @@ fun BottomNavigationBar(navController: NavController) {
     val items = listOf(
 BottomNavItem(icon = Icons.Default.Home, label = "Home", route = RoutesBN.HOME),
         BottomNavItem(icon = Icons.Default.DateRange, label = "Reservations", route = RoutesBN.OFFICES),
-        BottomNavItem(icon = Icons.Default.Search, label = "Search", route = "search"),
+        //[3]Agregar la pantalla al BottomNavigation
+        BottomNavItem(icon = Icons.Default.Search, label = "Search", route = RoutesBN.SEARCH_OFFICE),
         BottomNavItem(icon = Icons.Default.Email, label = "Chats", route = "chats"),
         BottomNavItem(icon = Icons.Default.Person, label = "Profile", route = "profile")
     )
@@ -73,7 +75,8 @@ items.forEach { item ->
                 },
                 selected = selected,
                 onClick = {
-                    if (item.route in listOf(RoutesBN.HOME, RoutesBN.OFFICES)) {
+                    // [4] Agregar SEARCH_OFFICE como ruta permitida
+                    if (item.route in listOf(RoutesBN.HOME, RoutesBN.OFFICES, RoutesBN.SEARCH_OFFICE)) {
                         navController.navigate(item.route) {
                             launchSingleTop = true
                             restoreState = true

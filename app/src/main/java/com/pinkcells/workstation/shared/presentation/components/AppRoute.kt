@@ -11,6 +11,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.pinkcells.workstation.offices.presentation.screens.OfficeDetailPage
 import com.pinkcells.workstation.offices.presentation.screens.OfficesPage
+import com.pinkcells.workstation.offices.presentation.screens.SearchOfficesPage
 import com.pinkcells.workstation.shared.presentation.screens.HomePage
 
 object RoutesBN {
@@ -18,6 +19,10 @@ object RoutesBN {
     const val OFFICES = "offices"
     const val OFFICE_DETAIL = "office/{officeId}"
     const val OFFICE_CREATE = "office/new"
+
+    //[1]Crear nueva ruta dentro de RoutesBN
+    const val SEARCH_OFFICE = "search_office"
+
 //    const val SEARCH = "search"
 //    const val CHATS = "chats"
 //    const val PROFILE = "profile"
@@ -38,6 +43,10 @@ fun AppRoot() {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(RoutesBN.HOME) { HomePage() }
+            //[2]Agregar la pantalla al Navhost
+            composable(RoutesBN.SEARCH_OFFICE) {
+                SearchOfficesPage()
+            }
 
             composable(RoutesBN.OFFICES) {
                 OfficesPage(
