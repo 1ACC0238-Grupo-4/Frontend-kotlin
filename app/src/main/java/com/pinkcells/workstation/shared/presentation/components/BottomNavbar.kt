@@ -41,6 +41,7 @@ items.forEach { item ->
             val selected = when (item.route) {
                 RoutesBN.HOME -> currentRoute == RoutesBN.HOME || currentRoute == null
                 RoutesBN.OFFICES -> currentRoute == RoutesBN.OFFICES || (currentRoute?.startsWith("office/") == true) || currentRoute == RoutesBN.OFFICE_CREATE
+                RoutesBN.CHATS -> currentRoute == RoutesBN.CHATS
                 RoutesBN.PROFILE -> currentRoute == RoutesBN.PROFILE || currentRoute == null
                 else -> currentRoute == item.route
             }
@@ -67,7 +68,7 @@ items.forEach { item ->
                 },
                 selected = selected,
                 onClick = {
-                    if (item.route in listOf(RoutesBN.HOME, RoutesBN.OFFICES, RoutesBN.PROFILE)) {
+                    if (item.route in listOf(RoutesBN.HOME, RoutesBN.OFFICES, RoutesBN.CHATS, RoutesBN.PROFILE)) {
                         navController.navigate(item.route) {
                             launchSingleTop = true
                             restoreState = true

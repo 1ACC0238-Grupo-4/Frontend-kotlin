@@ -10,6 +10,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.pinkcells.workstation.authentication.presentation.screens.PerfilScreen
+import com.pinkcells.workstation.chats.presentation.screens.ChatsPage
 import com.pinkcells.workstation.offices.presentation.screens.OfficeDetailPage
 import com.pinkcells.workstation.offices.presentation.screens.OfficesPage
 import com.pinkcells.workstation.shared.presentation.screens.HomePage
@@ -20,7 +21,7 @@ object RoutesBN {
     const val OFFICE_DETAIL = "office/{officeId}"
     const val OFFICE_CREATE = "office/new"
 //    const val SEARCH = "search"
-//    const val CHATS = "chats"
+    const val CHATS = "chats"
 
     const val PROFILE = "profile"
 }
@@ -80,6 +81,11 @@ fun AppRoot() {
                         navController.popBackStack()
                     },
                     onCancel = { navController.popBackStack() }
+                )
+            }
+
+            composable(RoutesBN.CHATS) {
+                ChatsPage(
                 )
             }
 
