@@ -1,45 +1,78 @@
 package com.pinkcells.workstation.authentication.presentation.viewmodel
 
 import android.content.Context
-import android.content.SharedPreferences
 import androidx.lifecycle.ViewModel
-
-data class Usuario(
-    val nombre: String = "",
-    val apellido: String = "",
-    val dni: String = "",
-    val email: String = "",
-    val celular: String = "",
-    val contraseña: String = "",
-    val tipoUsuario: String = ""
-)
+import androidx.lifecycle.viewModelScope
+import com.pinkcells.workstation.authentication.data.repository.AuthRepository
+import kotlinx.coroutines.launch
 
 class AuthViewModel(private val context: Context) : ViewModel() {
 
-    private val prefs: SharedPreferences = context.getSharedPreferences("WorkstationPrefs", Context.MODE_PRIVATE)
-
-    fun validateNombre(nombre: String): Boolean {
-        return nombre.length >= 3
-    }
-
-    fun validateApellido(apellido: String): Boolean {
-        return apellido.length >= 3
-    }
+    private val repository = AuthRepository()
 
     fun validateEmail(email: String): Boolean {
-        return email.contains("@") && email.contains(".")
+        return android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
 
-    fun validateDNI(dni: String): Boolean {
-        return dni.length == 8 && dni.all { it.isDigit() }
-    }
+    fun iniciarSesion(email: String, password: String, onResult: (Boolean, String) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val loginResult = repository.login(email, password)
 
-    fun validateCelular(celular: String): Boolean {
-        return celular.length == 9 && celular.all { it.isDigit() }
-    }
+                loginResult.onSuccess { response ->
+                    val token = response.token
+                    val userId = response.userId
 
-    fun validatePassword(password: String): Boolean {
-        return password.length >= 6
+                    if (token != null && userId != null && userId != 0) {
+                        saveAuthData(token, userId)
+
+                        val profileResult = repository.fetchUserProfile(userId)
+
+                        profileResult.onSuccess { user ->
+                            val tipoUsuario = if (user.role == 2) "Arrendador" else "Arrendatario"
+
+                            saveUserData(
+                                nombre = user.firstName,
+                                apellido = user.lastName,
+                                dni = user.dni,
+                                email = user.email,
+                                celular = user.phoneNumber,
+                                tipoUsuario = tipoUsuario
+                            )
+                            println("Perfil cargado correctamente: ${user.firstName} ${user.lastName}")
+                            onResult(true, response.message ?: "Login exitoso")
+                        }.onFailure { e ->
+                            println("Error al cargar perfil por userId, intentando por email...")
+
+                            val emailResult = repository.fetchUserByEmail(email)
+                            emailResult.onSuccess { user ->
+                                val tipoUsuario = if (user.role == 2) "Arrendador" else "Arrendatario"
+
+                                saveUserData(
+                                    nombre = user.firstName,
+                                    apellido = user.lastName,
+                                    dni = user.dni,
+                                    email = user.email,
+                                    celular = user.phoneNumber,
+                                    tipoUsuario = tipoUsuario
+                                )
+                                println("Perfil cargado por email: ${user.firstName} ${user.lastName}")
+                                onResult(true, "Login exitoso")
+                            }.onFailure { emailError ->
+                                println("No se pudo cargar el perfil: ${emailError.message}")
+                                onResult(true, "Login exitoso, pero no se pudo cargar el perfil")
+                            }
+                        }
+                    } else {
+                        onResult(false, response.message ?: "Error: Token o ID faltante")
+                    }
+                }.onFailure { exception ->
+                    onResult(false, exception.message ?: "Error de conexión")
+                }
+            } catch (e: Exception) {
+                onResult(false, "Error inesperado: ${e.message}")
+            }
+        }
     }
 
     fun registrarUsuario(
@@ -52,84 +85,139 @@ class AuthViewModel(private val context: Context) : ViewModel() {
         tipoUsuario: String,
         onResult: (Boolean, String) -> Unit
     ) {
-        val emailExiste = prefs.contains("usuario_$email")
+        viewModelScope.launch {
+            try {
+                val rol = when(tipoUsuario) {
+                    "Arrendador" -> 2
+                    "Arrendatario" -> 1
+                    else -> 1
+                }
 
-        if (emailExiste) {
-            onResult(false, "Este email ya está registrado")
-            return
+                val result = repository.signUp(
+                    firstName = nombre,
+                    lastName = apellido,
+                    dni = dni,
+                    email = email,
+                    phoneNumber = celular,
+                    password = contraseña,
+                    role = rol
+                )
+
+                result.onSuccess { response ->
+                    if (response.success) {
+                        println("Registro exitoso: ${response.message}")
+
+                        iniciarSesionDespuesDeRegistro(
+                            email = email,
+                            password = contraseña,
+                            nombre = nombre,
+                            apellido = apellido,
+                            dni = dni,
+                            celular = celular,
+                            tipoUsuario = tipoUsuario,
+                            onResult = onResult
+                        )
+                    } else {
+                        onResult(false, response.message ?: "Error al registrar")
+                    }
+                }.onFailure { exception ->
+                    onResult(false, exception.message ?: "Error de conexión")
+                }
+            } catch (e: Exception) {
+                onResult(false, "Error inesperado: ${e.message}")
+            }
         }
-
-        val editor = prefs.edit()
-        editor.putString("usuario_${email}_nombre", nombre)
-        editor.putString("usuario_${email}_apellido", apellido)
-        editor.putString("usuario_${email}_dni", dni)
-        editor.putString("usuario_${email}_email", email)
-        editor.putString("usuario_${email}_celular", celular)
-        editor.putString("usuario_${email}_contraseña", contraseña)
-        editor.putString("usuario_${email}_tipoUsuario", tipoUsuario)
-        editor.putBoolean("usuario_$email", true)
-
-        editor.putString("sesion_actual_email", email)
-        editor.putBoolean("sesion_activa", true)
-
-        editor.apply()
-
-        onResult(true, "Usuario registrado exitosamente")
     }
 
-    fun iniciarSesion(email: String, contraseña: String, onResult: (Boolean, String) -> Unit) {
-        val usuarioExiste = prefs.getBoolean("usuario_$email", false)
+    private fun iniciarSesionDespuesDeRegistro(
+        email: String,
+        password: String,
+        nombre: String,
+        apellido: String,
+        dni: String,
+        celular: String,
+        tipoUsuario: String,
+        onResult: (Boolean, String) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                println("Iniciando sesión automática...")
 
-        if (!usuarioExiste) {
-            onResult(false, "Usuario no encontrado")
-            return
+                kotlinx.coroutines.delay(500)
+
+                val loginResult = repository.login(email, password)
+
+                loginResult.onSuccess { response ->
+                    val token = response.token
+                    val userId = response.userId
+
+                    if (token != null && userId != null && userId != 0) {
+                        saveAuthData(token, userId)
+
+                        val profileResult = repository.fetchUserByEmail(email)
+
+                        profileResult.onSuccess { user ->
+                            saveUserData(
+                                nombre = user.firstName,
+                                apellido = user.lastName,
+                                dni = user.dni,
+                                email = user.email,
+                                celular = user.phoneNumber,
+                                tipoUsuario = if (user.role == 2) "Arrendador" else "Arrendatario"
+                            )
+                            println("Login automático exitoso con perfil del servidor")
+                            onResult(true, "Registro y login exitosos")
+                        }.onFailure {
+                            saveUserData(nombre, apellido, dni, email, celular, tipoUsuario)
+                            println("Login automático exitoso con datos locales")
+                            onResult(true, "Registro y login exitosos")
+                        }
+                    } else {
+                        println("Login automático falló, guardando datos localmente")
+                        saveUserData(nombre, apellido, dni, email, celular, tipoUsuario)
+                        onResult(true, "Registro exitoso")
+                    }
+                }.onFailure { exception ->
+                    println("Error en login automático: ${exception.message}")
+                    saveUserData(nombre, apellido, dni, email, celular, tipoUsuario)
+                    onResult(true, "Registro exitoso")
+                }
+            } catch (e: Exception) {
+                println("Excepción en login automático: ${e.message}")
+                saveUserData(nombre, apellido, dni, email, celular, tipoUsuario)
+                onResult(true, "Registro exitoso")
+            }
         }
-
-        val contraseñaGuardada = prefs.getString("usuario_${email}_contraseña", "")
-
-        if (contraseña != contraseñaGuardada) {
-            onResult(false, "Contraseña incorrecta")
-            return
-        }
-
-        val editor = prefs.edit()
-        editor.putString("sesion_actual_email", email)
-        editor.putBoolean("sesion_activa", true)
-        editor.apply()
-
-        onResult(true, "Inicio de sesión exitoso")
     }
 
     fun recuperarContraseña(email: String, onResult: (Boolean, String) -> Unit) {
-        val usuarioExiste = prefs.getBoolean("usuario_$email", false)
+        viewModelScope.launch {
+            try {
+                kotlinx.coroutines.delay(1500)
 
-        if (!usuarioExiste) {
-            onResult(false, "No existe una cuenta con este email")
-            return
+                if (validateEmail(email)) {
+                    onResult(true, "Se ha enviado un correo de recuperación a $email")
+                } else {
+                    onResult(false, "Email inválido")
+                }
+            } catch (e: Exception) {
+                onResult(false, "Error: ${e.message}")
+            }
         }
-
-        onResult(true, "Se ha enviado un correo a $email con instrucciones para recuperar tu contraseña")
     }
 
-    fun obtenerDatosUsuario(onResult: (Usuario) -> Unit) {
-        val email = prefs.getString("sesion_actual_email", "") ?: ""
-
-        if (email.isEmpty()) {
-            onResult(Usuario())
-            return
-        }
-
-        val usuario = Usuario(
-            nombre = prefs.getString("usuario_${email}_nombre", "") ?: "",
-            apellido = prefs.getString("usuario_${email}_apellido", "") ?: "",
-            dni = prefs.getString("usuario_${email}_dni", "") ?: "",
-            email = prefs.getString("usuario_${email}_email", "") ?: "",
-            celular = prefs.getString("usuario_${email}_celular", "") ?: "",
-            contraseña = prefs.getString("usuario_${email}_contraseña", "") ?: "",
-            tipoUsuario = prefs.getString("usuario_${email}_tipoUsuario", "") ?: ""
+    fun obtenerDatosUsuario(onResult: (DatosUsuario) -> Unit) {
+        val sharedPref = context.getSharedPreferences("AuthPrefs", Context.MODE_PRIVATE)
+        val datos = DatosUsuario(
+            nombre = sharedPref.getString("nombre", "") ?: "",
+            apellido = sharedPref.getString("apellido", "") ?: "",
+            dni = sharedPref.getString("dni", "") ?: "",
+            email = sharedPref.getString("email", "") ?: "",
+            celular = sharedPref.getString("celular", "") ?: "",
+            tipoUsuario = sharedPref.getString("tipoUsuario", "") ?: ""
         )
-
-        onResult(usuario)
+        println("Datos obtenidos: $datos")
+        onResult(datos)
     }
 
     fun actualizarDatosUsuario(
@@ -138,35 +226,87 @@ class AuthViewModel(private val context: Context) : ViewModel() {
         celular: String,
         onResult: (Boolean, String) -> Unit
     ) {
-        val email = prefs.getString("sesion_actual_email", "") ?: ""
-
-        if (email.isEmpty()) {
-            onResult(false, "No hay sesión activa")
-            return
+        val sharedPref = context.getSharedPreferences("AuthPrefs", Context.MODE_PRIVATE)
+        with(sharedPref.edit()) {
+            putString("nombre", nombre)
+            putString("apellido", apellido)
+            putString("celular", celular)
+            apply()
         }
-
-        val editor = prefs.edit()
-        editor.putString("usuario_${email}_nombre", nombre)
-        editor.putString("usuario_${email}_apellido", apellido)
-        editor.putString("usuario_${email}_celular", celular)
-        editor.apply()
-
-        onResult(true, "Perfil actualizado exitosamente")
-    }
-
-    fun cerrarSesion() {
-        val editor = prefs.edit()
-        editor.remove("sesion_actual_email")
-        editor.putBoolean("sesion_activa", false)
-        editor.apply()
+        println("Datos actualizados: $nombre $apellido - $celular")
+        onResult(true, "Datos actualizados correctamente")
     }
 
     fun haySesionActiva(): Boolean {
-        return prefs.getBoolean("sesion_activa", false)
+        return isLoggedIn()
     }
 
-    fun obtenerTipoUsuario(): String {
-        val email = prefs.getString("sesion_actual_email", "") ?: ""
-        return prefs.getString("usuario_${email}_tipoUsuario", "") ?: ""
+    fun cerrarSesion() {
+        logout()
+    }
+
+    private fun saveAuthData(token: String, userId: Int) {
+        val sharedPref = context.getSharedPreferences("AuthPrefs", Context.MODE_PRIVATE)
+        with(sharedPref.edit()) {
+            putString("token", token)
+            putInt("userId", userId)
+            putBoolean("isLoggedIn", true)
+            apply()
+        }
+        println("Token y userId guardados: token=${token.take(20)}..., userId=$userId")
+    }
+
+    private fun saveUserData(
+        nombre: String,
+        apellido: String,
+        dni: String,
+        email: String,
+        celular: String,
+        tipoUsuario: String
+    ) {
+        val sharedPref = context.getSharedPreferences("AuthPrefs", Context.MODE_PRIVATE)
+        with(sharedPref.edit()) {
+            putString("nombre", nombre)
+            putString("apellido", apellido)
+            putString("dni", dni)
+            putString("email", email)
+            putString("celular", celular)
+            putString("tipoUsuario", tipoUsuario)
+            apply()
+        }
+        println("Datos de usuario guardados: $nombre $apellido - $tipoUsuario")
+    }
+
+    fun getToken(): String? {
+        val sharedPref = context.getSharedPreferences("AuthPrefs", Context.MODE_PRIVATE)
+        return sharedPref.getString("token", null)
+    }
+
+    fun getUserId(): Int {
+        val sharedPref = context.getSharedPreferences("AuthPrefs", Context.MODE_PRIVATE)
+        return sharedPref.getInt("userId", 0)
+    }
+
+    fun isLoggedIn(): Boolean {
+        val sharedPref = context.getSharedPreferences("AuthPrefs", Context.MODE_PRIVATE)
+        return sharedPref.getBoolean("isLoggedIn", false)
+    }
+
+    private fun logout() {
+        val sharedPref = context.getSharedPreferences("AuthPrefs", Context.MODE_PRIVATE)
+        with(sharedPref.edit()) {
+            clear()
+            apply()
+        }
+        println("Sesión cerrada")
     }
 }
+
+data class DatosUsuario(
+    val nombre: String,
+    val apellido: String,
+    val dni: String,
+    val email: String,
+    val celular: String,
+    val tipoUsuario: String
+)

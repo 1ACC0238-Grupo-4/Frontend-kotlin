@@ -144,31 +144,33 @@ fun Register1Screen(navController: NavHostController) {
             }
 
             CampoTexto(nombre, { nombre = it; errorNombre = "" }, "Nombre*")
-            if (errorNombre.isNotEmpty()) Text(errorNombre, fontSize = 11.sp, color = Color(0xFFD32F2F), modifier = Modifier.padding(start = 16.dp, top = 4.dp))
+            if (errorNombre.isNotEmpty()) Text(errorNombre, fontSize = 11.sp, color = Color(0xFFD32F2F))
 
             Spacer(modifier = Modifier.height(16.dp))
 
             CampoTexto(apellido, { apellido = it; errorApellido = "" }, "Apellido*")
-            if (errorApellido.isNotEmpty()) Text(errorApellido, fontSize = 11.sp, color = Color(0xFFD32F2F), modifier = Modifier.padding(start = 16.dp, top = 4.dp))
+            if (errorApellido.isNotEmpty()) Text(errorApellido, fontSize = 11.sp, color = Color(0xFFD32F2F))
 
             Spacer(modifier = Modifier.height(16.dp))
 
             CampoTexto(dni, {
-                if (it.length <= 8 && it.all { char -> char.isDigit() }) { dni = it; errorDni = "" }
+                if (it.length <= 8 && it.all { char -> char.isDigit() }) dni = it
+                errorDni = ""
             }, "DNI*")
-            if (errorDni.isNotEmpty()) Text(errorDni, fontSize = 11.sp, color = Color(0xFFD32F2F), modifier = Modifier.padding(start = 16.dp, top = 4.dp))
+            if (errorDni.isNotEmpty()) Text(errorDni, fontSize = 11.sp, color = Color(0xFFD32F2F))
 
             Spacer(modifier = Modifier.height(16.dp))
 
             CampoTexto(email, { email = it; errorEmail = "" }, "Correo electrónico*", "Ejemplo: usuario@gmail.com")
-            if (errorEmail.isNotEmpty()) Text(errorEmail, fontSize = 11.sp, color = Color(0xFFD32F2F), modifier = Modifier.padding(start = 16.dp, top = 4.dp))
+            if (errorEmail.isNotEmpty()) Text(errorEmail, fontSize = 11.sp, color = Color(0xFFD32F2F))
 
             Spacer(modifier = Modifier.height(16.dp))
 
             CampoTexto(celular, {
-                if (it.length <= 9 && it.all { char -> char.isDigit() }) { celular = it; errorCelular = "" }
+                if (it.length <= 9 && it.all { char -> char.isDigit() }) celular = it
+                errorCelular = ""
             }, "Celular*")
-            if (errorCelular.isNotEmpty()) Text(errorCelular, fontSize = 11.sp, color = Color(0xFFD32F2F), modifier = Modifier.padding(start = 16.dp, top = 4.dp))
+            if (errorCelular.isNotEmpty()) Text(errorCelular, fontSize = 11.sp, color = Color(0xFFD32F2F))
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -180,7 +182,7 @@ fun Register1Screen(navController: NavHostController) {
                 mostrar = mostrarContraseña,
                 onToggleMostrar = { mostrarContraseña = !mostrarContraseña }
             )
-            if (errorContraseña.isNotEmpty()) Text(errorContraseña, fontSize = 11.sp, color = Color(0xFFD32F2F), modifier = Modifier.padding(start = 16.dp, top = 4.dp))
+            if (errorContraseña.isNotEmpty()) Text(errorContraseña, fontSize = 11.sp, color = Color(0xFFD32F2F))
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -192,7 +194,7 @@ fun Register1Screen(navController: NavHostController) {
                 mostrar = mostrarRepitaContraseña,
                 onToggleMostrar = { mostrarRepitaContraseña = !mostrarRepitaContraseña }
             )
-            if (errorRepitaContraseña.isNotEmpty()) Text(errorRepitaContraseña, fontSize = 11.sp, color = Color(0xFFD32F2F), modifier = Modifier.padding(start = 16.dp, top = 4.dp))
+            if (errorRepitaContraseña.isNotEmpty()) Text(errorRepitaContraseña, fontSize = 11.sp, color = Color(0xFFD32F2F))
 
             Spacer(modifier = Modifier.height(32.dp))
 
@@ -200,6 +202,7 @@ fun Register1Screen(navController: NavHostController) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
+
                 Button(
                     onClick = { navController.popBackStack() },
                     modifier = Modifier
@@ -218,13 +221,18 @@ fun Register1Screen(navController: NavHostController) {
                         errorNombre = if (nombre.length < 3) "Nombre debe tener al menos 3 caracteres" else ""
                         errorApellido = if (apellido.length < 3) "Apellido debe tener al menos 3 caracteres" else ""
                         errorDni = if (dni.length != 8) "DNI debe tener 8 dígitos" else ""
-                        errorEmail = if (!email.contains("@") || !email.contains(".")) "Email inválido" else ""
+                        errorEmail = if (!viewModel.validateEmail(email)) "Email inválido" else ""
                         errorCelular = if (celular.length != 9) "Celular debe tener 9 dígitos" else ""
                         errorContraseña = if (contraseña.length < 6) "Contraseña debe tener al menos 6 caracteres" else ""
                         errorRepitaContraseña = if (contraseña != repitaContraseña) "Las contraseñas no coinciden" else ""
 
-                        if (errorNombre.isEmpty() && errorApellido.isEmpty() && errorDni.isEmpty() &&
-                            errorEmail.isEmpty() && errorCelular.isEmpty() && errorContraseña.isEmpty() &&
+                        if (
+                            errorNombre.isEmpty() &&
+                            errorApellido.isEmpty() &&
+                            errorDni.isEmpty() &&
+                            errorEmail.isEmpty() &&
+                            errorCelular.isEmpty() &&
+                            errorContraseña.isEmpty() &&
                             errorRepitaContraseña.isEmpty()
                         ) {
                             navController.currentBackStackEntry?.savedStateHandle?.apply {
@@ -235,6 +243,7 @@ fun Register1Screen(navController: NavHostController) {
                                 set("celular", celular)
                                 set("contraseña", contraseña)
                             }
+
                             navController.navigate(Screen.Registro2.route)
                         }
                     },
