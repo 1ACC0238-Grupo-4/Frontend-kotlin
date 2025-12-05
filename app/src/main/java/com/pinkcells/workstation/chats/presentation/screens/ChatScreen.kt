@@ -24,9 +24,9 @@ import com.pinkcells.workstation.shared.ui.theme.WorkstationTheme
 
 @Composable
 fun ChatScreen(
+    title: String? = null,
     vm: ChatViewModel,
     modifier: Modifier = Modifier,
-    title: String = "Chat"
 ) {
     val uiMessages by vm.messages.collectAsStateWithLifecycle()
 
@@ -35,8 +35,17 @@ fun ChatScreen(
             .fillMaxSize()
             .background(Color.White)
     ) {
-        ChatHeader(title = title)
+        HeaderSection()
 
+        Spacer(modifier = Modifier.height(24.dp))
+        Text(
+            text = "$title",
+            fontSize = 24.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.Black,
+            modifier = Modifier.fillMaxWidth().padding(bottom = 16.dp),
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center
+        )
         // Lista de mensajes
         if (uiMessages.isEmpty()) {
             Box(
@@ -82,9 +91,7 @@ fun ChatScreen(
 
 /** Encabezado visual simple, consistente con tu estilo de ChatsPage */
 @Composable
-private fun ChatHeader(
-    title: String,
-) {
+private fun HeaderSection() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -101,7 +108,7 @@ private fun ChatHeader(
 
             val path = androidx.compose.ui.graphics.Path().apply {
                 moveTo(0f, size.height * 0.4f)
-                quadraticBezierTo(
+                quadraticTo(
                     size.width / 2f, size.height * 0.9f,
                     size.width, size.height * 0.4f
                 )
@@ -114,16 +121,6 @@ private fun ChatHeader(
                 color = Color(0xFF5BB318)
             )
         }
-
-        Text(
-            text = title,
-            fontSize = 22.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.White,
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .padding(start = 20.dp, bottom = 12.dp)
-        )
     }
 }
 
@@ -180,78 +177,9 @@ private fun ChatInput(
     }
 }
 
-/* ----------------------------------------------------------------------------------------------
-   PREVIEW
-   El Preview NO usa Firestore ni tu ChatViewModel real. Inyectamos mensajes mock para ver el UI.
-   ---------------------------------------------------------------------------------------------- */
-
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 fun ChatScreenPreview() {
     WorkstationTheme {
-        // Mensajes ficticios para ver el diseño:
-        val previewMessages = listOf(
-            UiMessage(
-                msg = com.pinkcells.workstation.chats.domain.Message(
-                    id = "m1",
-                    conversationId = "userA_userB",
-                    senderId = "userA",           // soy yo
-                    receiverId = "userB",
-                    content = "Hola, ¿cómo vas?",
-                    timestamp = System.currentTimeMillis() - 60_000,
-                    authorUid = "preview-uid",
-                    status = "SENT"
-                ),
-                pending = false
-            ),
-            UiMessage(
-                msg = com.pinkcells.workstation.chats.domain.Message(
-                    id = "m2",
-                    conversationId = "userA_userB",
-                    senderId = "userB",           // el otro
-                    receiverId = "userA",
-                    content = "Bien, gracias. ¿Y tú?",
-                    timestamp = System.currentTimeMillis() - 30_000,
-                    authorUid = "preview-uid",
-                    status = "SENT"
-                ),
-                pending = false
-            ),
-            UiMessage(
-                msg = com.pinkcells.workstation.chats.domain.Message(
-                    id = "m3",
-                    conversationId = "userA_userB",
-                    senderId = "userA",
-                    receiverId = "userB",
-                    content = "Probando envío pendiente...",
-                    timestamp = System.currentTimeMillis() - 10_000,
-                    authorUid = "preview-uid",
-                    status = "SENT"
-                ),
-                pending = true // ⏳ simula mensaje en cola/offline
-            )
-        )
-
-        // Renderizamos la UI base con los mock, sin usar VM (para evitar dependencias en preview)
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .background(Color.White)
-        ) {
-            ChatHeader(title = "Chat (Preview)")
-            LazyColumn(
-                modifier = Modifier
-                    .weight(1f)
-                    .fillMaxWidth(),
-                contentPadding = PaddingValues(vertical = 8.dp, horizontal = 12.dp)
-            ) {
-                items(previewMessages) { item ->
-                    val mine = item.msg.senderId == "userA"
-                    MessageBubble(text = item.msg.content, isMine = mine, pending = item.pending)
-                    Spacer(modifier = Modifier.height(8.dp))
-                }
-            }
-            ChatInput(onSend = { /* no-op en preview */ })
-        }
     }
 }

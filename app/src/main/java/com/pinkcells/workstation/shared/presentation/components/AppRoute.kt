@@ -1,10 +1,13 @@
 package com.pinkcells.workstation.shared.presentation.components
 
+import android.net.Uri
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -12,6 +15,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.pinkcells.workstation.authentication.presentation.screens.PerfilScreen
+import com.pinkcells.workstation.authentication.presentation.viewmodel.AuthViewModel
 import com.pinkcells.workstation.chats.data.ChatRepository
 import com.pinkcells.workstation.chats.data.signInAnonymously
 import com.pinkcells.workstation.chats.presentation.screens.ChatScreen
@@ -35,7 +39,7 @@ object RoutesBN {
 //    const val SEARCH = "search"
     const val CHATS = "chats"
 
-    const val CHATSCREEN = "chat_screen/{peerId}"
+    const val CHATSCREEN = "chat_screen/{peerId}/{peerName}"
 
     const val PROFILE = "profile"
 }
@@ -52,8 +56,11 @@ fun AppRoot() {
         }
     }
 
-    val myUserId: String = "MyUserId" // Reemplaza esto con la lógica para obtener el ID de usuario real
+    val context = LocalContext.current
+    val authVM = remember { AuthViewModel(context) }
 
+
+    val myUserId = remember { authVM.getUserId().toString() }
 
     Scaffold(
         bottomBar = {
@@ -115,8 +122,9 @@ fun AppRoot() {
 
             composable(RoutesBN.CHATS) {
                 ChatsPage(
-                    onChatClick = { peerId ->
-                        navController.navigate("chat_screen/$peerId"){
+                    onChatClick = { peerId, peerName ->
+                        val encodedName = Uri.encode(peerName)
+                        navController.navigate("chat_screen/$peerId/$encodedName") {
                             launchSingleTop = true
                         }
                     }
@@ -129,6 +137,7 @@ fun AppRoot() {
                 arguments = listOf(navArgument("peerId"){type= NavType.StringType})
             ){ backStackEntry ->
                 val peerId = backStackEntry.arguments?.getString("peerId")?: ""
+                val peerName = backStackEntry.arguments?.getString("peerName")?: ""
 
                 val repo = ChatRepository()
                 val chatVm = ChatViewModel(
@@ -136,7 +145,7 @@ fun AppRoot() {
                     myUserId = myUserId,
                     peerUserId = peerId
                 )
-                ChatScreen(vm= chatVm, title = "Chat con $peerId")
+                ChatScreen(vm= chatVm, title = "Chat con $peerName")
             }
 
             composable(route = RoutesBN.PROFILE){

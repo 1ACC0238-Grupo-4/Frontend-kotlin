@@ -31,7 +31,7 @@ import com.pinkcells.workstation.shared.ui.theme.WorkstationTheme
 @Composable
 fun ChatsPage(
     modifier: Modifier = Modifier,
-    onChatClick: (String) -> Unit = {},
+    onChatClick: (peerId: String, peerName: String) -> Unit
 ) {
     val vm: ChatsViewModel = viewModel()
     val chats by vm.chats.collectAsState()
@@ -76,7 +76,7 @@ fun ChatsPage(
                     items(chats) { chat ->
                         ChatCard(
                             chat = chat,
-                            onChatClick = { chat.id?.let { onChatClick(it) } }
+                            onChatClick = { chat.id?.let { id -> onChatClick(id, chat.firstName ?: "") } }
                         )
                     }
                     item{
@@ -138,6 +138,6 @@ private fun HeaderSection() {
 @Composable
 fun ChatsPagePreview(){
     WorkstationTheme {
-        ChatsPage(onChatClick = {} )
+        ChatsPage(onChatClick = { _, _ -> })
     }
 }
