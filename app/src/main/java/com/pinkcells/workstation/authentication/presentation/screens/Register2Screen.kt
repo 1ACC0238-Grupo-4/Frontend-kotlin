@@ -189,14 +189,8 @@ fun Register2Screen(navController: NavHostController) {
                                 tipoUsuario = tipoUsuarioSeleccionado
                             ) { success, message ->
                                 if (success) {
-                                    if (tipoUsuarioSeleccionado == "Arrendador") {
-                                        navController.navigate(Screen.Registro1.route) {
-                                            popUpTo(Screen.IniciarSesion.route) { inclusive = false }
-                                        }
-                                    } else {
-                                        navController.navigate(Screen.HomePage.route) {
-                                            popUpTo(Screen.IniciarSesion.route) { inclusive = true }
-                                        }
+                                    navController.navigate(Screen.HomePage.route) {
+                                        popUpTo(Screen.IniciarSesion.route) { inclusive = true }
                                     }
                                 } else {
                                     mensajeError = message
