@@ -25,7 +25,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.pinkcells.workstation.chats.presentation.components.ChatCard
 import com.pinkcells.workstation.chats.presentation.viewmodel.ChatsViewModel
-import com.pinkcells.workstation.offices.presentation.components.OfficeCard
 import com.pinkcells.workstation.shared.ui.theme.WorkstationTheme
 
 
@@ -77,7 +76,7 @@ fun ChatsPage(
                     items(chats) { chat ->
                         ChatCard(
                             chat = chat,
-                            onClick = { chat.id?.let { onChatClick(it) } }
+                            onChatClick = { chat.id?.let { onChatClick(it) } }
                         )
                     }
                     item{
@@ -119,7 +118,7 @@ private fun HeaderSection() {
 
             val path = androidx.compose.ui.graphics.Path().apply {
                 moveTo(0f, size.height * 0.4f)
-                quadraticBezierTo(
+                quadraticTo(
                     size.width / 2f, size.height * 0.9f,
                     size.width, size.height * 0.4f
                 )

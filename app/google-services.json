@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "239356573712",
+    "project_id": "chatapp-f47cc",
+    "storage_bucket": "chatapp-f47cc.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:239356573712:android:ca0ae7f7cd18e129d37295",
+        "android_client_info": {
+          "package_name": "com.pinkcells.workstation"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDM2e68S8mAgSNYTy7_zZr4osZU4tGTGmQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

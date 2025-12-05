@@ -1,11 +1,11 @@
 package com.pinkcells.workstation.chats.presentation.components
 
+import android.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -31,7 +31,7 @@ import com.pinkcells.workstation.chats.domain.User
 @Composable
 fun ChatCard(
     chat: User,
-    onClick: () -> Unit = {}
+    onChatClick: (String) -> Unit
 ){
     Card(
         modifier = Modifier
@@ -43,7 +43,7 @@ fun ChatCard(
             containerColor = Color(0xFFE8F36C)
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 3.dp),
-        onClick = onClick
+        onClick = { chat.id?.let { onChatClick(it) } }
     ) {
         Row(
             modifier = Modifier

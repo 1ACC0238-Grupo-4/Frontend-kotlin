@@ -3,18 +3,25 @@ package com.pinkcells.workstation.shared.presentation.components
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.lifecycleScope
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.pinkcells.workstation.authentication.presentation.screens.PerfilScreen
+import com.pinkcells.workstation.chats.data.ChatRepository
+import com.pinkcells.workstation.chats.data.signInAnonymously
+import com.pinkcells.workstation.chats.presentation.screens.ChatScreen
 import com.pinkcells.workstation.chats.presentation.screens.ChatsPage
+import com.pinkcells.workstation.chats.presentation.viewmodel.ChatViewModel
 import com.pinkcells.workstation.offices.presentation.screens.OfficeDetailPage
 import com.pinkcells.workstation.offices.presentation.screens.OfficesPage
 import com.pinkcells.workstation.offices.presentation.screens.SearchOfficesPage
 import com.pinkcells.workstation.shared.presentation.screens.HomePage
+import kotlinx.coroutines.launch
 
 object RoutesBN {
     const val HOME = "home"
@@ -28,12 +35,25 @@ object RoutesBN {
 //    const val SEARCH = "search"
     const val CHATS = "chats"
 
+    const val CHATSCREEN = "chat_screen/{peerId}"
+
     const val PROFILE = "profile"
 }
 
 @Composable
 fun AppRoot() {
     val navController = rememberNavController()
+
+    LaunchedEffect(Unit) {
+        try {
+            signInAnonymously()
+        } catch (_: Exception) {
+            // TODO: log si quieres mostrar algo al usuario; para MVP puedes ignorar
+        }
+    }
+
+    val myUserId: String = "MyUserId" // Reemplaza esto con la lógica para obtener el ID de usuario real
+
 
     Scaffold(
         bottomBar = {
@@ -95,7 +115,28 @@ fun AppRoot() {
 
             composable(RoutesBN.CHATS) {
                 ChatsPage(
+                    onChatClick = { peerId ->
+                        navController.navigate("chat_screen/$peerId"){
+                            launchSingleTop = true
+                        }
+                    }
                 )
+            }
+
+
+            composable(
+                route = RoutesBN.CHATSCREEN,
+                arguments = listOf(navArgument("peerId"){type= NavType.StringType})
+            ){ backStackEntry ->
+                val peerId = backStackEntry.arguments?.getString("peerId")?: ""
+
+                val repo = ChatRepository()
+                val chatVm = ChatViewModel(
+                    repo = repo,
+                    myUserId = myUserId,
+                    peerUserId = peerId
+                )
+                ChatScreen(vm= chatVm, title = "Chat con $peerId")
             }
 
             composable(route = RoutesBN.PROFILE){
